@@ -2322,8 +2322,8 @@ fresh@0.5.0:
     object-path "^0.11.4"
 
 "frontful-dao@0.x || 1.x":
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/frontful-dao/-/frontful-dao-0.0.11.tgz#c8872ea9e59faf3a46e2ff18c094e9144e496829"
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/frontful-dao/-/frontful-dao-0.0.12.tgz#2e1ff89b08aa225e608798a839de3746c90472d4"
   dependencies:
     deep-equal "^1.0.1"
     deep-extend "^0.5.0"
