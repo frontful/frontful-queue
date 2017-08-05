@@ -11,7 +11,7 @@ if (process.frontful_triggers) {
   })
 }
 
-process.frontful_triggers = Object.keys(serverConfig.trigger).map((path) => ({
+process.frontful_triggers = Object.keys(serverConfig.trigger || {}).map((path) => ({
   start() {
     this.timeout = setTimeout(() => {
       http.get(path).then(() => {

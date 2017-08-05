@@ -34,11 +34,11 @@ module.exports = {
             }, state.message),
           },
         ],
-        tags: state => ({
-          tag01: state.get('message.id_foobar'),
-          tag02: state.get('tasks.0.response.id_foo'),
-          tag03: state.get('tasks.0.response.id_bar'),
-        }),
+        tags: state => [
+          state.get('message.id_foobar'),
+          state.get('tasks.0.response.id_foo'),
+          state.get('tasks.0.response.id_bar'),
+        ],
       },
     ],
   },

@@ -97,7 +97,11 @@ export default class Job {
   }
 
   fields() {
-    const tags = this.setup.tags ? this.setup.tags(this.state) : {}
+    const tags = (this.setup.tags ? this.setup.tags(this.state) : []).reduce((tags, tag, idx) => {
+      tags[`tag0${idx + 1}`] = tag
+      return tags
+    }, {})
+
     return {
       ...tags,
       id: this.state.id,

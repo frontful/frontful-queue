@@ -1,6 +1,6 @@
 {
   "name": "frontful-queue",
-  "description": "Message queue microservice",
+  "description": "Message queue micro service with focus on jobs and tasks",
   "private": true,
   "engines": {
     "node": ">=6"
