@@ -6,6 +6,7 @@ import objectPath from 'object-path'
 import serverConfig from 'frontful-config/server'
 import {http} from './http'
 import {store} from './store'
+import {HttpError} from 'frontful-dao'
 
 export default class Job {
   constructor(...args) {
@@ -47,7 +48,10 @@ export default class Job {
         })
       }).catch((error) => {
         const modified = Date.now()
-        const errorMessage = environment.error.parser(error).string
+        let errorMessage = environment.error.parser(error).string
+        if (error instanceof HttpError && error.parsed && error.parsed.error && error.parsed.error.what) {
+          errorMessage = `HttpError ${error.response.status}; ${error.parsed.error.what}; ${error.parsed.error.where}`
+        }
         Object.assign(this.state, {
           status: 'error',
           modified: modified,
