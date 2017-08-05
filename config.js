@@ -2,6 +2,7 @@ module.exports = {
   browser: {},
   common: {},
   server: {
+    active: true,
     store: {
       connection: {
         dialect: 'sqlite',
