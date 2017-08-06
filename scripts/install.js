@@ -4,7 +4,7 @@ const path = require('path')
 const svc = new Service({
   name: 'Frontful Queue',
   script: path.resolve(process.cwd(), './build/server/index.js'),
-  description: 'Message queue microservice',
+  description: 'Message queue micro service',
   cwd: process.cwd(),
   wait: 5,
   grow: .5,
