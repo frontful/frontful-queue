@@ -73,6 +73,7 @@ Note that state is mutated during job processing, below is state outline for whe
     - `count` default `100`
     - `page` default `1`
     - `search` default `null`
+  - `GET /log` - returns most recent application logs
 
 ### Installation
 
@@ -102,8 +103,8 @@ Keep in mind that `frontful-queue` uses store polling, this means that whatever 
 - [Install dependencies and store dialect](https://github.com/frontful/frontful-queue#installation)
 - `yarn build` to build the service
 - To start the service
-  - Linux - `PORT=7010 HOST=localhost node ./build/server`
-  - Windows - `./node_modules/.bin/cross-env PORT=7010 HOST=localhost node ./build/server`
+  - Linux - `PORT=7010 node ./build/server`
+  - Windows - `./node_modules/.bin/cross-env PORT=7010 node ./build/server`
 
 #### Linux
 
@@ -114,5 +115,5 @@ On Linux use any deployment strategy e.g. started directly from console, using N
 On Windows you can either start service directly from console or install it as windows service.
 
 ```shell
-./node_modules/.bin/cross-env PORT=7010 HOST=localhost yarn deploy
+./node_modules/.bin/cross-env PORT=7010 yarn deploy
 ```
