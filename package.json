@@ -1,7 +1,7 @@
 {
   "name": "frontful-queue",
   "version": "1.0.0",
-  "description": "Message queue like micro service focused on sequential processing of jobs with multiple tasks",
+  "description": "Configurable message queue like micro service focused on sequential processing of jobs i.e sets of tasks",
   "private": true,
   "engines": {
     "node": ">=6"
