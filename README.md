@@ -1,23 +1,23 @@
 # <a href="https://github.com/frontful/frontful-queue"><img heigth="75" src="http://www.frontful.com/assets/packages/queue.png" alt="Frontful Queue" /></a>
 
-`frontful-queue` is configurable message queue like micro service focused on sequential processing of jobs i.e sets of tasks. For monitoring queue use [`frontful-queue-monitor`](https://github.com/frontful/frontful-queue-monitor) or exposed [`frontful-queue` API](https://github.com/frontful/frontful-queue#api)
+`frontful-queue` is configurable message queue micro service focused on sequential processing of jobs i.e sets of tasks. For monitoring queue use [`frontful-queue-monitor`](https://github.com/frontful/frontful-queue-monitor) or exposed [`frontful-queue` API](https://github.com/frontful/frontful-queue#api)
 
 ### Mechanics
 
-New jobs and tasks are added and configured by modifying `config.js` file. For more details on configuration schema read [Configuration](https://github.com/frontful/frontful-queue#configuration) section.
+Jobs and tasks are added and configured by modifying [`config.js`](https://github.com/frontful/frontful-queue/blob/master/config.js). For more details on configuration schema read [Configuration](https://github.com/frontful/frontful-queue#configuration) section.
 
-  - **Jobs** - Job is an entry point e.g. `http://localhost:7010/sample/job/foobar` that `frontful-queue` exposes based on its configuration to accept HTTP POST requests with JSON messages. Each job will have its own entry point. When message is received, new job instance i.e **state** is created and message becomes part of it. State then is saved in **store** and response is sent to caller containing current state. Note that response indicates that **message is queued, processing has not started yet**. Queued state gets picked up by **processor** from store. State then gets passed to sequence of job tasks. When all tasks succeed job is marked as completed or if one task fails job is marked as failed. All updates are reflected in state and saved to the store. Jobs and task can be managed (edited and resent in the future) via [`frontful-queue-monitor`](https://github.com/frontful/frontful-queue-monitor) or [`frontful-queue` API](https://github.com/frontful/frontful-queue#api).
-  - **Tasks** - Task is an endpoint that represents external business logic that accepts HTTP POST request with JSON message. Job consists of multiple tasks. Task `message` builder receives **state** to construct outgoing message. Simplest outgoing message can be constructed like `message: state => state.message` i.e original message that job received will be set as outgoing message for task. Constructing outgoing messages from state means that it is integral for subsequent tasks to access responses from previous tasks e.g. `message: state => ({id: state.get('tasks.0.response.id')})`.
-  - **State** - State is JSON object that contains all information about particular job instance, its tasks and incoming and outgoing messages. State is used to construct outgoing task `message`s and job `tagss`, accessing responses and status as well as creating integrations via `frontful-queue` API.
+  - **Jobs** - Job is an entry point e.g. `http://localhost:7010/sample/job/foobar` that `frontful-queue` exposes based on its configuration to accept POST requests with JSON messages. Each job will have its own entry point. When message is received, new job instance i.e [**state**](https://github.com/frontful/frontful-queue#state) is created and message becomes part of it. State then is saved in **store** and response is sent to caller containing current state. Note that response indicates that **message is queued, processing has not started yet**. Queued state gets picked up by **processor** from store. State then gets passed to sequence of job tasks. When all tasks succeed job is marked as completed, if one task fails job is marked as failed. All changes are reflected in state, state is mutated and saved to the store. Jobs and tasks can be managed (edited and resent in the future) using [`frontful-queue-monitor`](https://github.com/frontful/frontful-queue-monitor) or [`frontful-queue` API](https://github.com/frontful/frontful-queue#api).
+  - **Tasks** - Task is an endpoint that represents external worker or business logic that accepts HTTP POST request with JSON message. Job consists of multiple tasks. Task `message()` method receives **state** to construct outgoing message. Simplest outgoing message can be constructed like `message: state => state.message` i.e original message that jobs entry point received will be set as outgoing message for this task. Constructing outgoing messages from state means that it is integral for subsequent tasks to access responses from previous tasks e.g. `message: state => ({id: state.get('tasks.0.response.id')})`.
+  - [**State**](https://github.com/frontful/frontful-queue#state) - State is JSON object that contains all information about particular job instance, its tasks and incoming and outgoing messages. State is used to construct outgoing task `message`s and job `tags`, accessing responses and status as well as building integrations using `frontful-queue` API.
   - **Processor** - Processor is responsible for job and task execution, sequence, polling as well as terminating tasks that may potentially have timed out.
-  - **Triggers** - Trigger is specific endpoint that is called based on specified time interval. This can be useful to regularly trigger some endpoint that in turn may result in POST messages to some job's entry point.
+  - **Triggers** - Trigger is special endpoint that is called based on specified time interval. This can be useful to regularly trigger some endpoint that in turn may result in POST requests to jobs entry point.
   - **Store** - Store is message queue persistence layer, storage can be MSSQL, MySQL, Postgres, SQLite or memory. Storage abstraction is provided by [Sequelize](http://docs.sequelizejs.com/).
 
 ### Configuration
 
-Configuration is done `config.js` file and it can be modified or replaced after production build. Jobs, tasks, processor, triggers and store are configured there.
+Jobs and tasks are added and configured by modifying [`config.js`](https://github.com/frontful/frontful-queue/blob/master/config.js). `config.js` can be modified and replaced after production build. Jobs, tasks, processor, triggers and store are configured there.
 
-- **`server.active`** - Whether processor and triggers are active, if `true` `frontful-queue` is fully functional, if `false` processor and triggers are disabled. API is accessible in all cases.
+- **`server.active`** - Whether processor and triggers are active. If `true` `frontful-queue` is fully functional, if `false` processor and triggers are disabled. API is accessible in all cases.
 - **`server.store`** - Contains store configuration attributes.
   - **`server.store.connection`** - Describes connection to store for `frontful-queue`. Access to store is provided by [Sequelize](http://docs.sequelizejs.com/), attributes that are available for `server.store.connection` can be found in [reference of sequelize constructor](http://docs.sequelizejs.com/class/lib/sequelize.js~Sequelize.html#instance-constructor-constructor). Dialect is mandatory and depending on what store dialect you chose, you need to install [corresponding dialect provider](http://docs.sequelizejs.com/manual/installation/getting-started.html#installation) e.g. `yarn add sqlite3` to support `sqlite` dialect.
   - **`server.store.table`** - Table where queue state will be saved. Table will be created automatically.
@@ -36,11 +36,12 @@ Configuration is done `config.js` file and it can be modified or replaced after 
 
 ### State
 
-State is JSON object that contains all information about particular job instance, its tasks and incoming and outgoing messages. State is used to construct outgoing task `message`s and job `tags`, accessing responses and status as well as creating integrations via `frontful-queue` API.  
+State is JSON object that contains all information about particular job instance, its tasks and incoming and outgoing messages. State is used to construct outgoing task `message`s and job `tags`, accessing responses and status as well as building integrations using `frontful-queue` API.  
 Note that state is mutated during job processing, below is state outline for when job that has completed successfully, when state is just created, or tasks not started some values may be `null` e.g. `modified` or `response`.
+
 ```javascript
 {
-  "id": "5cf0e5d9-e82e-4377-a418-1d73f5abd061", // Job instance ie. state id
+  "id": "5cf0e5d9-e82e-4377-a418-1d73f5abd061", // Id of Job instance ie. state
   "name": "sample_job_foobar", // Name of the job
   "message": {...}, // JSON message that was received by job entry point
   "origin": "external", // Whether state originated from `external` caller or `internal` resend
@@ -65,7 +66,7 @@ Note that state is mutated during job processing, below is state outline for whe
 
 #### Utilities
 
-  - `state` - `state` object is passed to `message` method for task and `tags` method for job. [All state attributes](https://github.com/frontful/frontful-queue#state) can be accessed directly e.g. `state.tasks[0].response.id`. `state` also gas `state.get(path)` method that accepts attribute path e.g.  `state.get('state.tasks.0.response.id')`, difference is in that `state.get(path)` will return `null` if path is not found instead of throwing exception when accessing attributes of `undefined` or `null`.
+  - `state` - `state` object is passed to `message()` method for task and `tags()` method for job. All [state attributes](https://github.com/frontful/frontful-queue#state) can be accessed directly e.g. `state.tasks[0].response.id`. `state` also has `state.get(path)` method that accepts attribute path e.g.  `state.get('state.tasks.0.response.id')`, difference is in that `state.get(path)` will return `null` if path is not found instead of throwing exception when accessing attributes of `undefined` or `null`.
 
 #### REST
 
@@ -78,13 +79,12 @@ Note that state is mutated during job processing, below is state outline for whe
 ### Installation
 
 ```shell
-# install yarn package manager
+# Install yarn package manager
 npm install yarn -g
-# install dependencies
+# Install dependencies
 yarn install
-# install store dialect provider
+# Install store dialect provider, default store configuration uses sqlite
 # http://docs.sequelizejs.com/manual/installation/getting-started.html#installation
-# default store configuration uses sqlite
 yarn add sqlite3
 ```
 
@@ -108,11 +108,11 @@ Keep in mind that `frontful-queue` uses store polling, this means that whatever 
 
 #### Linux
 
-On Linux use any deployment strategy e.g. started directly from console, using Nginx, Passenger etc. but keep in mind that there should be only one process running.
+On Linux use any deployment strategy e.g. started directly from console, using [Nginx](https://nginx.org/en/), [Passenger](https://www.phusionpassenger.com/) etc. but keep in mind that there should be only one process running.
 
 #### Windows
 
-On Windows you can either start service directly from console or install it as windows service.
+On Windows you can either start service directly from console or install it as windows service using `yarn deploy` command.
 
 ```shell
 ./node_modules/.bin/cross-env PORT=7010 yarn deploy
