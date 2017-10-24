@@ -12,41 +12,54 @@ const store = {
   getProcessing() {
     return model().findOne({
       attributes: ['id', 'state'],
-      where: {status: 'processing'},
+      where: {
+        status: 'processing'
+      },
       order: [['created', 'ASC']],
     })
   },
   getQueued() {
     return model().findOne({
       attributes: ['id', 'state'],
-      where: {status: 'queued'},
+      where: {
+        $or: [
+          {status: 'queued'},
+          {status: 'waiting'},
+        ],
+      },
       order: [['created', 'ASC']],
     })
   },
-  get(count, page, search) {
-    count = count || 100
+  getById(id) {
+    return model().findOne({
+      attributes: ['id', 'state'],
+      where: {
+        id: id,
+      },
+    })
+  },
+  find(where) {
+    return model().findOne({
+      attributes: ['id', 'state'],
+      where: where,
+    })
+  },
+  search(page, count, search, where) {
     page = page || 1
+    count = count || 20
     search = search || ''
-
-    let where = {}
-
-    if (search) {
-      where = {
-        where: {
-          state: {
-            $like: '%' + search.trim().replace(/\s+/gi, '%') + '%'
-          }
-        }
-      }
-    }
-
-    return model().findAll({
+    return model().findAll(Object.assign({
       offset: count * (page - 1),
       limit: count,
-      ...where,
       attributes: ['id', 'state'],
       order: [['created', 'DESC']],
-    })
+    }, (search || where) ? {
+      where: Object.assign({}, search ? {
+        state: {
+          $like: '%' + search.trim().replace(/\s+/gi, '%') + '%'
+        }
+      } : {}, where)
+    } : {}))
   },
 }
 

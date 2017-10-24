@@ -4,7 +4,8 @@ import {dao} from 'frontful-dao'
 const models = new Models({})
 
 @dao(() => ({
-  url: ''
+  url: '',
+  timeout: 60 * 60 * 1000,
 }))
 class Http {}
 

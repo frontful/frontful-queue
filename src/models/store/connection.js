@@ -14,7 +14,7 @@ function createConnection() {
     id: {type: Sequelize.UUID, primaryKey: true, allowNull: false},
     name: {type: Sequelize.STRING},
     origin: {type: Sequelize.ENUM('external', 'internal')},
-    status: {type: Sequelize.ENUM('queued', 'processing', 'success', 'error')},
+    status: {type: Sequelize.ENUM('queued', 'processing', 'success', 'error', 'waiting')},
     status_details: {type: Sequelize.TEXT},
     created: {type: Sequelize.BIGINT},
     modified: {type: Sequelize.BIGINT},
@@ -30,10 +30,14 @@ function createConnection() {
     timestamps: false,
     tableName: serverConfig.store.table,
     indexes: [
-      {
-        name: 'created_and_status_index',
-        fields: [{attribute: 'created', order: 'DESC'}, 'status']
-      }
+      {fields: [{attribute: 'created', order: 'DESC'}, 'status']},
+      {fields: ['tag01']},
+      {fields: ['tag02']},
+      {fields: ['tag03']},
+      {fields: ['tag04']},
+      {fields: ['tag05']},
+      {fields: ['tag06']},
+      {fields: ['tag07']},
     ]
   })
 

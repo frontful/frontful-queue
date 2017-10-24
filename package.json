@@ -7,7 +7,7 @@
     "node": ">=6"
   },
   "frontful": {
-    "config": "./config.js",
+    "config": "./config/sample/development/config.js",
     "environment": {
       "server": {
         "port": 7010
@@ -28,17 +28,27 @@
   },
   "dependencies": {
     "body-parser": "^1.17.2",
+    "cookie-parser": "^1.4.3",
     "cors": "^2.8.3",
     "cross-env": "^5.0.1",
+    "deep-extend": "^0.5.0",
+    "es6-error": "^4.0.2",
     "express": "^4.15.3",
-    "frontful-config": "0.x || 1.x",
-    "frontful-dao": "0.x || 1.x",
-    "frontful-environment": "0.x || 1.x",
-    "frontful-model": "0.x || 1.x",
+    "frontful-config": "2.x",
+    "frontful-dao": "2.x",
+    "frontful-environment": "2.x",
+    "frontful-model": "2.x",
+    "frontful-utils": "2.x",
+    "fs-extra": "^4.0.2",
     "mobx": "^3.1.16",
+    "nodemailer": "^4.1.1",
     "object-path": "^0.11.4",
     "sequelize": "^4.2.1",
-    "winston": "^2.3.1"
+    "socket.io": "^2.0.3",
+    "sqlite3": "^3.1.12",
+    "tedious": "^2.0.0",
+    "winston": "^2.3.1",
+    "xml2js": "^0.4.19"
   },
   "devDependencies": {
     "archiver": "^2.0.0"

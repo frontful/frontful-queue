@@ -7,6 +7,8 @@ import serverConfig from 'frontful-config/server'
 import {http} from './http'
 import {store} from './store'
 import {HttpError} from 'frontful-dao'
+import {LogicalError, WaitError} from './Errors'
+import {socket} from './socket'
 
 export default class Job {
   constructor(...args) {
@@ -21,58 +23,121 @@ export default class Job {
     }
   }
 
+  static load(id) {
+    return store.getById(id).then((model) => {
+      return model ? new Job(model) : null
+    })
+  }
+
   process() {
-    const task = this.state.tasks.find((task) => task.status === 'queued')
-    if (task) {
-      const setup = this.setup.tasks.find((setup) => setup.name === task.name)
-      const modified = Date.now()
-      Object.assign(this.state, {
-        status: 'processing',
-        modified: modified,
-      })
-      Object.assign(task, {
-        message: setup.message(this.state),
-        status: 'processing',
-        modified: modified,
-      })
-      return this.save().then(() => {
-        return http.post(setup.url, task.message).then((response) => {
-          Object.assign(task, {
-            status: 'success',
-            modified: Date.now(),
-            response: response,
-          })
-          return this.save().then(() => {
-            return this.process()
-          })
-        })
-      }).catch((error) => {
+    try {
+      const task = this.state.tasks.find((task) => task.status === 'queued' || task.status === 'waiting')
+      const taskIndex = this.state.tasks.indexOf(task)
+
+      if (this.state.wait && (this.state.modified || this.state.created) + this.state.wait > Date.now()) {
+        return Promise.reject(new WaitError())
+      }
+
+      if (task) {
+        const tasksSetup = Array.isArray(this.setup.tasks) ? this.setup.tasks : this.setup.tasks(this.state)
+        const setup = tasksSetup[taskIndex]
         const modified = Date.now()
-        let errorMessage = environment.error.parser(error).string
-        if (error instanceof HttpError && error.parsed && error.parsed.error && error.parsed.error.what) {
-          errorMessage = `HttpError ${error.response.status}; ${error.parsed.error.what}; ${error.parsed.error.where}`
-        }
         Object.assign(this.state, {
-          status: 'error',
+          status: 'processing',
           modified: modified,
-          status_details: errorMessage,
         })
         Object.assign(task, {
-          status: 'error',
+          message: setup.message(this.state),
+          status: 'processing',
           modified: modified,
-          response: errorMessage,
         })
         return this.save().then(() => {
-          throw error
+          return http.post(setup.url, task.message).then((response) => {
+            Object.assign(task, {
+              status: 'success',
+              modified: Date.now(),
+              response: response,
+            })
+            if (setup.status) {
+              const status = setup.status(response)
+              if (!status.success) {
+                if (status.wait) {
+                  Object.assign(this.state, {
+                    status: 'waiting',
+                    modified: Date.now(),
+                    wait: status.wait,
+                  })
+                  Object.assign(task, {
+                    status: 'waiting',
+                  })
+                  if (status.count) {
+                    if (this.state.count >= status.count) {
+                      throw new LogicalError(response)
+                    }
+                    Object.assign(this.state, {
+                      count: (this.state.count || 0) + 1,
+                    })
+                  }
+                }
+                else {
+                  throw new LogicalError(response)
+                }
+              }
+            }
+            return this.save().then(() => {
+              if (this.state.status !== 'waiting') {
+                return this.process()
+              }
+            })
+          })
+        }).catch((error) => {
+          if (error instanceof WaitError || this.state.status === 'error') {
+            throw error
+          }
+          else {
+            const modified = Date.now()
+            let errorMessage = environment.error.parser(error).string
+            let response = errorMessage
+            if (error instanceof LogicalError) {
+              errorMessage = `${error.message}`
+              response = error.response
+            } else if (error instanceof HttpError && error.parsed && error.parsed.error && error.parsed.error.what) {
+              errorMessage = error.parsed.error.what
+              response = error.parsed
+            }
+            Object.assign(this.state, {
+              status: 'error',
+              modified: modified,
+              status_details: errorMessage,
+            })
+            Object.assign(task, {
+              status: 'error',
+              modified: modified,
+              response: response,
+            })
+            return this.save().then(() => {
+              throw error
+            })
+          }
         })
-      })
+      }
+      else {
+        Object.assign(this.state, {
+          status: 'success',
+          modified: Date.now(),
+        })
+        return this.save()
+      }
     }
-    else {
+    catch(error) {
       Object.assign(this.state, {
-        status: 'success',
+        status: 'error',
         modified: Date.now(),
+        status_details: error.toString(),
       })
-      return this.save()
+      return this.save().then(() => {
+        throw error
+      })
     }
   }
 
@@ -80,7 +145,7 @@ export default class Job {
     if (this.state.status === 'processing') {
       const now = Date.now()
       const lastUpdated = this.state.modified || this.state.created || 0
-      if ((now - lastUpdated) > serverConfig.processor.timeout) {
+      if ((now - lastUpdated) > serverConfig.processor.processingTimeout) {
         const errorMessage = 'Timed out'
         Object.assign(this.state, {
           status: 'error',
@@ -128,6 +193,7 @@ export default class Job {
   create(name, message) {
     this.model = null
     this.setup = serverConfig.jobs.find((job) => job.name === name)
+    const now = Date.now()
     this.state = {
       id: Sequelize.Utils.toDefaultValue(Sequelize.UUIDV4()),
       name: name,
@@ -135,28 +201,78 @@ export default class Job {
       origin: 'external',
       status: 'queued',
       status_details: '',
-      created: Date.now(),
-      modified: null,
-      tasks: this.setup.tasks.map((task) => ({
-        name: task.name,
-        message: null,
-        response: null,
-        modified: null,
-        status: 'queued',
-      })),
+      created: now,
+      modified: now,
     }
+    const tasksSetup = Array.isArray(this.setup.tasks) ? this.setup.tasks : this.setup.tasks(this.state)
+    this.state.tasks = tasksSetup.map((task) => ({
+      name: task.name,
+      message: null,
+      response: null,
+      modified: null,
+      status: 'queued',
+    }))
+  }
+
+  reset(message) {
+    const now = Date.now()
+    Object.assign(this.state, {
+      message_original: this.state.message_original || this.state.message,
+      message: message,
+      origin: 'internal',
+      status: 'queued',
+      status_details: '',
+      modified: now,
+    })
+    const tasksSetup = Array.isArray(this.setup.tasks) ? this.setup.tasks : this.setup.tasks(this.state)
+    this.state.tasks = tasksSetup.map((task) => ({
+      name: task.name,
+      message: null,
+      response: null,
+      modified: null,
+      status: 'queued',
+    }))
+    return this
+  }
+
+  retry() {
+    if (this.state.status === 'error') {
+      const now = Date.now()
+      Object.assign(this.state, {
+        status: 'queued',
+        status_details: '',
+        modified: now,
+      })
+      this.state.tasks = this.state.tasks.map((task) => {
+        if (task.status === 'error') {
+          return {
+            name: task.name,
+            message: null,
+            response: null,
+            modified: null,
+            status: 'queued',
+          }
+        }
+        else {
+          return task
+        }
+      })
+    }
+    return this
   }
 
   save() {
     if (this.model) {
       return this.model.update(this.fields()).then((model) => {
         this.model = model
+        socket.updated(this.state.id)
         return this
       })
     }
     else {
       return store.create(this.fields()).then((model) => {
         this.model = model
+        socket.added(this.state.id)
         return this
       })
     }

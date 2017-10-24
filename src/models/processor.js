@@ -2,6 +2,8 @@ import Job from './Job'
 import log from '../utils/log'
 import serverConfig from 'frontful-config/server'
 import {store} from './store'
+import {getStatus} from '../utils/status'
+import {email} from '../utils/email'
 
 // See `frontful-environment`s coldreload `README.md`
 if (process.frontful_processor) {
@@ -20,7 +22,7 @@ export default process.frontful_processor = {
         log.error(error)
         this.start()
       })
-    }, serverConfig.processor.interval)
+    }, serverConfig.processor.pollingInterval)
   },
   getProcessing() {
     return store.getProcessing().then((model) => {
@@ -33,19 +35,28 @@ export default process.frontful_processor = {
     })
   },
   process() {
-    return this.getProcessing().then((job) => {
-      if (!job) {
-        return this.getQueued().then((job) => {
-          if (job) {
-            return job.process().then(() => {
-              return this.process()
-            })
-          }
-        })
-      }
-      else {
-        return job.validate()
-      }
-    })
+    if (getStatus() === 'started') {
+      return this.getProcessing().then((job) => {
+        if (!job) {
+          return this.getQueued().then((job) => {
+            if (job) {
+              return job.process().catch((error) => {
+                return email(job.state.id).then(() => {throw error}).catch(() => {throw error})
+              }).then(() => {
+                return this.process()
+              })
+            }
+          })
+        }
+        else {
+          return Promise.resolve(job.validate()).catch((error) => {
+            return email(job.state.id).then(() => {throw error}).catch(() => {throw error})
+          })
+        }
+      })
+    }
+    else {
+      return Promise.resolve()
+    }
   }
 }

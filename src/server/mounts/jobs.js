@@ -5,7 +5,9 @@ import serverConfig from 'frontful-config/server'
 
 const app = express()
 
-app.use(bodyParser.json())
+app.use(bodyParser.json({
+  strict: false,
+}))
 
 serverConfig.jobs.forEach((job) => {
   app.post(job.path, (req, res, next) => {
