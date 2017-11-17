@@ -83,6 +83,16 @@ export default class Job {
                   throw new LogicalError(response)
                 }
               }
+              else {
+                if (status.warning) {
+                  Object.assign(task, {
+                    status: 'warning',
+                  })
+                  Object.assign(this.state, {
+                    status_details: status.warning,
+                  })
+                }
+              }
             }
             return this.save().then(() => {
               if (this.state.status !== 'waiting') {
@@ -123,7 +133,7 @@ export default class Job {
       }
       else {
         Object.assign(this.state, {
-          status: 'success',
+          status: !this.state.status_details ? 'success' : 'warning',
           modified: Date.now(),
         })
         return this.save()

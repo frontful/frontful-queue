@@ -43,7 +43,9 @@ export default process.frontful_processor = {
               return job.process().catch((error) => {
                 return email(job.state.id).then(() => {throw error}).catch(() => {throw error})
               }).then(() => {
-                return this.process()
+                return (job.state.status === 'warning' ? email(job.state.id).catch(() => {}) : Promise.resolve()).then(() => {
+                  return this.process()
+                })
               })
             }
           })

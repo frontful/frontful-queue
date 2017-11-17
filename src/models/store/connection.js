@@ -14,7 +14,7 @@ function createConnection() {
     id: {type: Sequelize.UUID, primaryKey: true, allowNull: false},
     name: {type: Sequelize.STRING},
     origin: {type: Sequelize.ENUM('external', 'internal')},
-    status: {type: Sequelize.ENUM('queued', 'processing', 'success', 'error', 'waiting')},
+    status: {type: Sequelize.ENUM('queued', 'processing', 'success', 'error', 'waiting', 'warning')},
     status_details: {type: Sequelize.TEXT},
     created: {type: Sequelize.BIGINT},
     modified: {type: Sequelize.BIGINT},
