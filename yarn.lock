@@ -1583,8 +1583,8 @@ create-hmac@^1.1.0, create-hmac@^1.1.2, create-hmac@^1.1.4:
     sha.js "^2.4.8"
 
 cross-env@^5.0.1:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/cross-env/-/cross-env-5.1.0.tgz#1f12d6b3777d5847dcf9cf39fbee3c6a76dd5058"
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/cross-env/-/cross-env-5.1.1.tgz#b6d8ab97f304c0f71dae7277b75fe424c08dfa74"
   dependencies:
     cross-spawn "^5.1.0"
     is-windows "^1.0.0"
@@ -2485,8 +2485,8 @@ frontful-config@2.x:
     object-path "^0.11.4"
 
 frontful-dao@2.x:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/frontful-dao/-/frontful-dao-2.0.1.tgz#3db36ea103f85daf8b41c48ed62ad74cc2ef703e"
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/frontful-dao/-/frontful-dao-2.0.2.tgz#5b3729e47a2525c7dcafba7160d21315228dfc2e"
   dependencies:
     deep-equal "^1.0.1"
     deep-extend "^0.5.0"
@@ -2534,8 +2534,8 @@ frontful-environment@2.x:
     webpack-node-externals "^1.5.4"
 
 frontful-model@2.x:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/frontful-model/-/frontful-model-2.0.1.tgz#20efb8df3fe584c8b45d254d5cfd9fa54fd1e871"
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/frontful-model/-/frontful-model-2.0.2.tgz#fc537ae217d819bcee93a76fa072da2ebaadbc06"
   dependencies:
     deep-extend "^0.5.0"
     frontful-utils "2.x"
@@ -3650,8 +3650,8 @@ node-sass@^4.5.2:
     stdout-stream "^1.4.0"
 
 nodemailer@^4.1.1:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-4.3.0.tgz#59cbfcb7aa39dbc469b31439d11e2a3f924208d8"
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-4.4.0.tgz#571989e524a906fb83b1518f3e4c0d3140db24af"
 
 "nopt@2 || 3":
   version "3.0.6"
@@ -4747,8 +4747,8 @@ send@0.16.1:
     statuses "~1.3.1"
 
 sequelize@^4.2.1:
-  version "4.17.1"
-  resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-4.17.1.tgz#f17ee149dc443e42a0207bff4e46dcf9bf35d8b3"
+  version "4.22.11"
+  resolved "https://registry.yarnpkg.com/sequelize/-/sequelize-4.22.11.tgz#86d19ab4124295926c79afaee9fe518d244efcf3"
   dependencies:
     bluebird "^3.4.6"
     cls-bluebird "^2.0.1"
@@ -4765,7 +4765,7 @@ sequelize@^4.2.1:
     terraformer-wkt-parser "^1.1.2"
     toposort-class "^1.0.1"
     uuid "^3.0.0"
-    validator "^8.0.0"
+    validator "^9.1.0"
     wkx "^0.4.1"
 
 serve-static@1.13.1:
@@ -5176,8 +5176,8 @@ tar@^2.0.0, tar@^2.2.1:
     inherits "2"
 
 tedious@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/tedious/-/tedious-2.0.1.tgz#4f7c1f90b4a2c378fd3e033bb93834ea1d7a81be"
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/tedious/-/tedious-2.1.4.tgz#e8bbf9a98324e9591ea3b11d480cbe113b382d8f"
   dependencies:
     babel-runtime "^6.23.0"
     big-number "0.3.1"
@@ -5390,9 +5390,9 @@ validate-npm-package-license@^3.0.1:
     spdx-correct "~1.0.0"
     spdx-expression-parse "~1.0.0"
 
-validator@^8.0.0:
-  version "8.2.0"
-  resolved "https://registry.yarnpkg.com/validator/-/validator-8.2.0.tgz#3c1237290e37092355344fef78c231249dab77b9"
+validator@^9.1.0:
+  version "9.1.1"
+  resolved "https://registry.yarnpkg.com/validator/-/validator-9.1.1.tgz#3bdd1065cbd28f9d96ac806dee01030d32fd97ef"
 
 vary@^1, vary@~1.1.2:
   version "1.1.2"
