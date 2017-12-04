@@ -4,11 +4,11 @@ import Sequelize from 'sequelize'
 import environment from 'frontful-environment'
 import objectPath from 'object-path'
 import serverConfig from 'frontful-config/server'
-import {http} from './http'
-import {store} from './store'
 import {HttpError} from 'frontful-dao'
 import {LogicalError, WaitError} from './Errors'
+import {http} from './http'
 import {socket} from './socket'
+import {store} from './store'
 
 export default class Job {
   constructor(...args) {
@@ -45,6 +45,7 @@ export default class Job {
         Object.assign(this.state, {
           status: 'processing',
           modified: modified,
+          wait: null,
         })
         Object.assign(task, {
           message: setup.message(this.state),
@@ -93,6 +94,11 @@ export default class Job {
                   })
                 }
               }
+            }
+            if (task.status === 'success') {
+              Object.assign(this.state, {
+                count: null,
+              })
             }
             return this.save().then(() => {
               if (this.state.status !== 'waiting') {
@@ -213,6 +219,8 @@ export default class Job {
       status_details: '',
       created: now,
       modified: now,
+      wait: null,
+      count: null,
     }
     const tasksSetup = Array.isArray(this.setup.tasks) ? this.setup.tasks : this.setup.tasks(this.state)
     this.state.tasks = tasksSetup.map((task) => ({
@@ -233,6 +241,8 @@ export default class Job {
       status: 'queued',
       status_details: '',
       modified: now,
+      wait: null,
+      count: null,
     })
     const tasksSetup = Array.isArray(this.setup.tasks) ? this.setup.tasks : this.setup.tasks(this.state)
     this.state.tasks = tasksSetup.map((task) => ({
@@ -252,6 +262,8 @@ export default class Job {
         status: 'queued',
         status_details: '',
         modified: now,
+        wait: null,
+        count: null,
       })
       this.state.tasks = this.state.tasks.map((task) => {
         if (task.status === 'error') {

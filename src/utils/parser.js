@@ -10,7 +10,7 @@ export const parser = {
     catch(error) {
       json = message
     }
-    return JSON.stringify(json, null, 2)
+    return JSON.stringify(json, null, 2).replace(/\r\n|\n/gi, '\r\n')
   },
   messageToXml(message, state) {
     return new xml2js.Builder({
@@ -18,7 +18,7 @@ export const parser = {
       attrkey: '$attribute',
       charkey: '$value',
       rootName: 'Root'
-    }).buildObject(JSON.parse(parser.messageToJson(message, state)))
+    }).buildObject(JSON.parse(parser.messageToJson(message, state))).replace(/\r\n|\n/gi, '\r\n')
   },
   jsonToMessage(json, state) {
     try {

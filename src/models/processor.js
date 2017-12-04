@@ -1,9 +1,10 @@
 import Job from './Job'
 import log from '../utils/log'
 import serverConfig from 'frontful-config/server'
-import {store} from './store'
-import {getStatus} from '../utils/status'
+import {WaitError} from './Errors'
 import {email} from '../utils/email'
+import {getStatus} from '../utils/status'
+import {store} from './store'
 
 // See `frontful-environment`s coldreload `README.md`
 if (process.frontful_processor) {
@@ -41,11 +42,23 @@ export default process.frontful_processor = {
           return this.getQueued().then((job) => {
             if (job) {
               return job.process().catch((error) => {
-                return email(job.state.id).then(() => {throw error}).catch(() => {throw error})
+                if (error instanceof WaitError) {
+                  throw error
+                }
+                else {
+                  return email(job.state.id).then(() => {throw error}).catch(() => {throw error})
+                }
               }).then(() => {
                 return (job.state.status === 'warning' ? email(job.state.id).catch(() => {}) : Promise.resolve()).then(() => {
                   return this.process()
                 })
+              }).catch((error) => {
+                if (error instanceof WaitError) {
+                  return null
+                }
+                else {
+                  throw error
+                }
               })
             }
           })
